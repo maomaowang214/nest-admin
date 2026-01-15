@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output
+
+# Production
+dist/
+build/
+out/
+
+# Misc
+.DS_Store
+*.pem
+*.log
+.env.local
+.env.*.local
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files (保留示例文件，但忽略实际配置)
+.env
+.env.development
+.env.production
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+__data/
+.cache/
+.turbo/
+.nx/
+
+# Upload files
+public/upload/
+back-end/public/upload/
+front-end/public/upload/
+
+# TypeScript
+*.tsbuildinfo
+
+# Database
+*.sql.bak
+*.db
+*.sqlite
+
+# Docker
+.docker/
