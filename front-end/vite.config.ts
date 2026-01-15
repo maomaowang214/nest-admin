@@ -19,12 +19,21 @@ import pkg from './package.json'
 
 const CWD = process.cwd()
 
+// 环境变量
+// const BASE_ENV_CONFIG = loadEnv('', CWD);
+// const DEV_ENV_CONFIG = loadEnv('development', CWD);
+// const PROD_ENV_CONFIG = loadEnv('production', CWD);
+
 const __APP_INFO__ = {
   pkg,
   lastBuildTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
 }
 
+/**
+ * https://vitejs.dev/config/
+ */
 export default ({ command, mode }: ConfigEnv): UserConfig => {
+  // 环境变量
   const { VITE_BASE_URL, VITE_DROP_CONSOLE, VITE_MOCK_IN_PROD } = loadEnv(mode, CWD)
 
   const isDev = command === 'serve'
@@ -47,12 +56,19 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       vue(),
       VueDevTools(),
       Unocss(),
-      vueJsx({}),
+      vueJsx({
+        // options are passed on to @vue/babel-plugin-jsx
+      }),
+      // 指定 mkcert 的下载源为 coding，从 coding.net 镜像下载证书
       mkcert({ source: 'coding' }),
+      // 开启 http2 代理
       Http2Proxy(),
+      // mockServerPlugin({ build: isBuild && VITE_MOCK_IN_PROD === 'true' }), // 已禁用，mocks目录已删除
       TinymceResourcePlugin({ baseUrl: '/tinymce-resource/' }),
       createSvgIconsPlugin({
+        // Specify the icon folder to be cached
         iconDirs: [resolve(CWD, 'src/assets/icons')],
+        // Specify symbolId format
         symbolId: 'svg-icon-[dir]-[name]',
       }),
       Components({
@@ -69,17 +85,33 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         ],
         resolvers: [
           AntDesignVueResolver({
-            importStyle: false,
+            importStyle: false, // css in js
             exclude: ['Button'],
           }),
         ],
       }),
+      // https://github.com/fi3ework/vite-plugin-checker
+      // isDev &&
+      //   checker({
+      //     typescript: true,
+      //     // vueTsc: true,
+      //     eslint: {
+      //       useFlatConfig: true,
+      //       lintCommand: 'eslint "./src/**/*.{.vue,ts,tsx}"', // for example, lint .ts & .tsx
+      //     },
+      //     overlay: {
+      //       initialIsOpen: false,
+      //     },
+      //   }),
     ],
     css: {
       preprocessorOptions: {
         less: {
           javascriptEnabled: true,
           modifyVars: {},
+          // additionalData: `
+          //   @import '@/styles/variables.less';
+          // `,
         },
       },
     },
@@ -93,6 +125,8 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           secure: false,
           agent: new https.Agent(),
           changeOrigin: true,
+          // 后端需要 /api 前缀，所以不删除
+          // rewrite: path => path.replace(/^\/api/, ''),
         },
         '^/upload': {
           target: 'http://127.0.0.1:7001/upload',
@@ -100,7 +134,10 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           rewrite: path => path.replace(/^\/upload/, ''),
         },
       },
+      // 提前转换和缓存文件以进行预热。可以在服务器启动时提高初始页面加载速度，并防止转换瀑布。
       warmup: {
+        // 请注意，只应该预热频繁使用的文件，以免在启动时过载 Vite 开发服务器
+        // 可以通过运行 npx vite --debug transform 并检查日志来找到频繁使用的文件
         clientFiles: ['./index.html', './src/{components,api}/*'],
       },
     },
@@ -111,6 +148,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       pure: VITE_DROP_CONSOLE === 'true' ? ['console.log'] : [],
       drop: VITE_DROP_CONSOLE === 'true' ? ['debugger'] : [],
       supported: {
+        // https://github.com/vitejs/vite/pull/8665
         'top-level-await': true,
       },
     },
@@ -119,8 +157,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       cssTarget: 'chrome108',
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
-        output: {},
+        output: {
+          // minifyInternalExports: false,
+        },
         onwarn(warning, rollupWarn) {
+          // ignore circular dependency warning
           if (
             warning.code === 'CYCLIC_CROSS_CHUNK_REEXPORT'
             && warning.exporter?.includes('src/api/')

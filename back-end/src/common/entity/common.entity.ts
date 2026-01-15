@@ -12,6 +12,16 @@ import {
 
 import { generateSnowflakeId } from '~/utils'
 
+// 如果觉得前端转换时间太麻烦，并且不考虑通用性的话，可以在服务端进行转换，eg: @UpdateDateColumn({ name: 'updated_at', transformer })
+// const transformer: ValueTransformer = {
+//   to(value) {
+//     return value
+//   },
+//   from(value) {
+//     return dayjs(value).format('YYYY-MM-DD HH:mm:ss')
+//   },
+// }
+
 export abstract class CommonEntity extends BaseEntity {
   @PrimaryColumn({ type: 'varchar', length: 19, comment: '主键ID（雪花ID）' })
   id: string
@@ -40,6 +50,10 @@ export abstract class CompleteEntity extends CommonEntity {
   @Column({ name: 'update_by', type: 'varchar', length: 19, comment: '更新者', nullable: true })
   updateBy: string | null
 
+  /**
+   * 不会保存到数据库中的虚拟列，数据量大时可能会有性能问题，有性能要求请考虑在 service 层手动实现
+   * @see https://typeorm.io/decorator-reference#virtualcolumn
+   */
   @ApiProperty({ description: '创建者' })
   @VirtualColumn({ query: alias => `SELECT username FROM sys_user WHERE id = ${alias}.create_by` })
   creator: string

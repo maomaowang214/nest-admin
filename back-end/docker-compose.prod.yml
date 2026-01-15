@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  nest-admin-server:
+    # build: 从当前路径构建镜像（使用本地项目）
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PROJECT_DIR=${PROJECT_DIR}
+    # 使用本地构建
+    container_name: nest-admin-server
+    # pull_policy: always  # 使用本地构建时不需要 pull_policy
+    restart: always
+    env_file:
+      - .env
+      - .env.production
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - nest_admin_net
+
+networks:
+  nest_admin_net:
+    name: nest_admin_net

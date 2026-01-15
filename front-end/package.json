@@ -27,7 +27,7 @@
     "dev": "vite dev",
     "build": "rimraf dist && cross-env NODE_ENV=production vite build",
     "build:watch": "rimraf dist && cross-env NODE_ENV=production vite build --watch",
-    "build:pkg": "pnpm -r --paralle --filter=\"\./packages/*\" run build",
+    "build:pkg": "pnpm -r --paralle --filter=\"./packages/*\" run build",
     "nx:build": "nx run-many -t build --exclude @admin-pkg/components",
     "nx:build:watch": "nx watch --all -- nx run \\$NX_PROJECT_NAME:build",
     "preview": "npm run build --watch && vite preview",
